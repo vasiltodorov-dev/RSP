@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException,ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -15,6 +15,13 @@ export class UserService {
 
   // Change this to use the repository
   async create(createUserDto: CreateUserDto) {
+    const existingUser = await this.findOneByEmail(createUserDto.email);
+    
+    if (existingUser) {
+      // 409 Conflict is the perfect HTTP code for this
+      throw new ConflictException('This email is already registered');
+    }
+
     const newUser = this.usersRepository.create(createUserDto);
     return await this.usersRepository.save(newUser);
   }
@@ -25,62 +32,54 @@ export class UserService {
   }
 
   // You can leave these CLI-generated ones as is or update them later
-  findAll() {
-    return this.usersRepository.find();
+  async findAll() {
+    return await this.usersRepository.find({
+      select: ['id', 'email'], // Security: Don't return passwords in a list
+    });
   }
 
-  findOne(id: number) {
-    return this.usersRepository.findOne({ where: { id } });
+  async findOne(id: number) {
+    return await this.usersRepository.findOne({ where: { id },select: ['id', 'email'] });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    if (updateUserDto.email) {
+
+    // 2. THE PROACTIVE CHECK: Does another ingredient already have this name?
+    const existingWithSameEmail = await this.usersRepository.findOne({
+      where: { email: updateUserDto.email }
+    });
+
+    // If we found one, and it's NOT the one we are currently editing
+    if (existingWithSameEmail && existingWithSameEmail.id !== id) {
+      throw new ConflictException(
+        `Cannot change to email "${updateUserDto.email}" because that email is already in use.`
+      );
+    }
+  }
+    // 1. Destructure to explicitly ignore a password if it somehow sneaks in
+    const { password, ...safeData } = updateUserDto;
+
+    // 2. Perform the update
+    const result = await this.usersRepository.update(id, safeData);
+
+    // 3. Handle the "Not Found" case
+    if (result.affected === 0) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    // 4. Return the fresh user data
+    return this.findOne(id);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number) {
+    const result = await this.usersRepository.delete(id);
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`User #${id} not found`);
+    }
+
+    return { deleted: true };
   }
 }
 
-// @Injectable()
-// export class UserService {
-//   private readonly MOCK_HASH = '$2b$10$Pa09SIdY6S3fUvI6nO6.0eO.NfL.C7f.O6f.P6f.O6f.O6f.O6f.O6';
-
-//   async create(createUserDto: CreateUserDto): Promise<User> {
-//     // Returns a mock user object instead of a string
-//     return {
-//       id: 1,
-//       email: createUserDto.email,
-//       password: this.MOCK_HASH, 
-//       recipes: [],
-//     } as User;
-//   }
-//   findAll() {
-//     return `This action returns all user`;
-//   }
-
-//   findOne(id: number) {
-//     return `This action returns a #${id} user`;
-//   }
-
-//   async findOneByEmail(email: string): Promise<User | null> {
-//     // If the email is test@test.com, return our mock user
-//     if (email === 'test@test.com') {
-//       return {
-//         id: 1,
-//         email: 'test@test.com',
-//         password: this.MOCK_HASH, // bcrypt will compare against this
-//         recipes: [],
-//       } as User;
-//     }
-//     return null;
-//   }
-
-//   update(id: number, updateUserDto: UpdateUserDto) {
-//     return `This action updates a #${id} user`;
-//   }
-
-//   remove(id: number) {
-//     return `This action removes a #${id} user`;
-//   }
-// }

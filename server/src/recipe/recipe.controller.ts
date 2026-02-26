@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards,Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards,Request, Query, NotFoundException } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
@@ -19,13 +19,23 @@ export class RecipeController {
   }
 
   @Get()
-  findAll() {
-    return this.recipeService.findAll();
+  findAll(
+    @Query('cuisineId') cuisineId?: number,
+    @Query('ingredientId') ingredientId?: number,
+    @Query('dietaryId') dietaryId?: number,
+  ) {
+    return this.recipeService.findAll({ cuisineId, ingredientId, dietaryId });
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.recipeService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    const recipe = await this.recipeService.findOne(+id);
+    if (!recipe) {
+      // This is where we get "loud" for the frontend
+      throw new NotFoundException(`Recipe with ID ${id} does not exist`);
+    }
+  
+    return recipe;
   }
 
   @Patch(':id')

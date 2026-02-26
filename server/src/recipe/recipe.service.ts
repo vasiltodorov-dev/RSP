@@ -4,8 +4,8 @@ import { UpdateRecipeDto } from './dto/update-recipe.dto';
 
 @Injectable()
 export class RecipeService {
-  create(createRecipeDto: CreateRecipeDto) {
-    return 'This action adds a new recipe';
+  create(createRecipeDto: CreateRecipeDto, userId: number) {
+    return `This action adds a new recipe with authorID #${userId}`;
   }
 
   findAll() {

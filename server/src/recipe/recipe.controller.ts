@@ -1,15 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards,Request } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // Import your guard
 
 @Controller('recipe')
 export class RecipeController {
   constructor(private readonly recipeService: RecipeService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createRecipeDto: CreateRecipeDto) {
-    return this.recipeService.create(createRecipeDto);
+  create(@Body() createRecipeDto: any, @Request() req) {
+    // req.user is populated by the Guard from the JWT
+    const userId = req.user.userId; 
+    console.log('User ID from Token:', userId);
+    
+    return this.recipeService.create(createRecipeDto, userId);
   }
 
   @Get()

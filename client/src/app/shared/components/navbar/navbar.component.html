@@ -1,0 +1,20 @@
+<nav class="navbar">
+  <div class="logo" routerLink="/">RecipeBook</div>
+
+  <div class="menu">
+    @if (!authService.isLoggedIn()) {
+      <a routerLink="/login">Login</a>
+      <button (click)="testMockLogin()" class="btn-test">Mock Login (Test Only)</button>
+    } 
+    
+    @else {
+      <span>Welcome, <strong>{{ authService.currentUser()?.email }}</strong></span>
+      
+      @if (authService.currentUser()?.role === 'admin') {
+        <span class="badge">Admin</span>
+      }
+
+      <button (click)="authService.logout()">Logout</button>
+    }
+  </div>
+</nav>

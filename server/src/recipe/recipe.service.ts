@@ -16,6 +16,7 @@ export class RecipeService {
     private recipeIngredientRepository: Repository<RecipeIngredient>,
     private dataSource: DataSource, // Used for transactions
   ) {}
+
   async updateImage(recipeId: number, imagePath: string) {
     const recipe = await this.recipeRepository.findOneBy({ id: recipeId });
     if (!recipe) throw new NotFoundException('Recipe not found');
@@ -23,6 +24,7 @@ export class RecipeService {
     recipe.imageURL = imagePath;
     return this.recipeRepository.save(recipe);
   }
+  
   async create(createRecipeDto: CreateRecipeDto, userId: number) {
     const { ingredientData, cuisineId, dietaryPreferenceIds, ...recipeDetails } = createRecipeDto;
 
@@ -53,8 +55,22 @@ export class RecipeService {
 
         await queryRunner.manager.save(recipeIngredients);
       }
+      const fullRecipe = await queryRunner.manager.findOne(Recipe, {
+        where: { id: savedRecipe.id },
+        relations: [
+          'author', 
+          'cuisine', 
+          'dietaryPreferences', 
+          'recipeIngredients', 
+          'recipeIngredients.ingredient'
+        ],
+        // Same select logic as findOne
+        select: {
+          author: { id: true, email: true }
+        }
+      });
       await queryRunner.commitTransaction();
-      return savedRecipe;
+      return fullRecipe;
 
     } catch (err) {
       await queryRunner.rollbackTransaction();

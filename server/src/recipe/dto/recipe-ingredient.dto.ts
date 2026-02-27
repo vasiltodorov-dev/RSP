@@ -8,5 +8,5 @@ export class RecipeIngredientDto {
 
   @IsString()
   @IsNotEmpty()
-  amount: string; // "200g", "1 tablespoon", etc.
+  amount: string; 
 }

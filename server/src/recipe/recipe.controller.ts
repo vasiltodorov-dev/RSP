@@ -22,11 +22,12 @@ export class RecipeController {
 
   @Get()
   findAll(
+    @Query('title') title?: string,
     @Query('cuisineId') cuisineId?: number,
     @Query('ingredientId') ingredientId?: number,
     @Query('dietaryId') dietaryId?: number,
   ) {
-    return this.recipeService.findAll({ cuisineId, ingredientId, dietaryId });
+    return this.recipeService.findAll({ title,cuisineId, ingredientId, dietaryId });
   }
 
   @Get(':id')

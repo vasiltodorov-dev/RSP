@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Cuisine } from './entities/cuisine.entity';
 import { CreateCuisineDto } from './dto/create-cuisine.dto';
 import { UpdateCuisineDto } from './dto/update-cuisine.dto';
+import { ILike } from 'typeorm';
 
 @Injectable()
 export class CuisineService {
@@ -28,8 +29,11 @@ export class CuisineService {
       }
     }
 
-  findAll() {
-    return this.cuisineRepository.find({ order: { name: 'ASC' } });
+  async findAll(name?: string) {
+    return await this.cuisineRepository.find({
+      where: name ? { name: ILike(`${name}%`) } : {},
+      order: { name: 'ASC' }, // Nice for frontend lists
+    });
   }
 
   async findOne(id: number) {

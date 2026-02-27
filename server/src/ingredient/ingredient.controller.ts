@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, UseGuards, Query } from '@nestjs/common';
 import { IngredientService } from './ingredient.service';
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
@@ -17,8 +17,8 @@ export class IngredientController {
   }
 
   @Get()
-  findAll() {
-    return this.ingredientService.findAll();
+  findAll(@Query('name') name?: string) {
+    return this.ingredientService.findAll(name);
   }
 
   @Get(':id')

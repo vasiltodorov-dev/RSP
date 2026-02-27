@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, UseGuards, Query } from '@nestjs/common';
 import { DietaryPreferencesService } from './dietary_preferences.service';
 import { CreateDietaryPreferenceDto } from './dto/create-dietary_preference.dto';
 import { UpdateDietaryPreferenceDto } from './dto/update-dietary_preference.dto';
@@ -16,9 +16,9 @@ export class DietaryPreferencesController {
   }
 
   @Get()
-  findAll() {
-    return this.dietaryPreferencesService.findAll();
-  }
+    findAll(@Query('name') name?: string) {
+      return this.dietaryPreferencesService.findAll(name);
+    }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {

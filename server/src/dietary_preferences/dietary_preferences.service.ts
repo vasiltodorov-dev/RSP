@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { DietaryPreference } from './entities/dietary_preference.entity';
 import { CreateDietaryPreferenceDto } from './dto/create-dietary_preference.dto';
 import { UpdateDietaryPreferenceDto } from './dto/update-dietary_preference.dto';
+import { ILike } from 'typeorm';
 
 @Injectable()
 export class DietaryPreferencesService {
@@ -28,8 +29,11 @@ export class DietaryPreferencesService {
       throw error;
     }
   }
-  findAll() {
-    return this.dietaryRepository.find({ order: { name: 'ASC' } });
+    async findAll(name?: string) {
+    return await this.dietaryRepository.find({
+      where: name ? { name: ILike(`${name}%`) } : {},
+      order: { name: 'ASC' }, // Nice for frontend lists
+    });
   }
 
   async findOne(id: number) {

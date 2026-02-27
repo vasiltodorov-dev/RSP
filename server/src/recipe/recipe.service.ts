@@ -5,6 +5,7 @@ import { Recipe } from './entities/recipe.entity';
 import { RecipeIngredient } from './entities/recipe-ingredient.entity';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
+import { ILike } from 'typeorm';
 
 @Injectable()
 export class RecipeService {
@@ -58,36 +59,33 @@ export class RecipeService {
     }
   }
 
-  async findAll(query: { cuisineId?: number; ingredientId?: number; dietaryId?: number }) {
-  const { cuisineId, ingredientId, dietaryId } = query;
+  async findAll(query: { title?: string,cuisineId?: number; ingredientId?: number; dietaryId?: number }) {
+    const { title,cuisineId, ingredientId, dietaryId } = query;
 
-  return await this.recipeRepository.find({
-    where: {
-      // Filter by Cuisine
-      cuisine: cuisineId ? { id: cuisineId } : {},
-
-      // Filter by Dietary Preference
-      dietaryPreferences: dietaryId ? { id: dietaryId } : {},
-
-      // Filter by Ingredient (Requires joining the recipeIngredients table)
-      recipeIngredients: ingredientId ? { ingredientId: ingredientId } : {},
-    },
-    relations: {
-      author: true,
-      cuisine: true,
-      dietaryPreferences: true,
-      recipeIngredients: {
-        ingredient: true,
+    return await this.recipeRepository.find({
+      where: {  
+        title: title ? ILike(`%${title}%`) : undefined,    
+        cuisine: cuisineId ? { id: cuisineId } : {},
+        dietaryPreferences: dietaryId ? { id: dietaryId } : {},
+        recipeIngredients: ingredientId ? { ingredientId: ingredientId } : {},
       },
-    },
-    select: {
-        author: {
-          id: true,
-          email: true,
+      relations: {
+        author: true,
+        cuisine: true,
+        dietaryPreferences: true,
+        recipeIngredients: {
+          ingredient: true,
         },
       },
-  });
-}
+      select: {
+          author: {
+            id: true,
+            email: true,
+          },
+        },
+      order: { title: 'ASC' },
+    });
+  }
 
   async findOne(id: number) {
   return await this.recipeRepository.findOne({

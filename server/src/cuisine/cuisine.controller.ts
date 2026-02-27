@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException,UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException,UseGuards, Query } from '@nestjs/common';
 import { CuisineService } from './cuisine.service';
 import { CreateCuisineDto } from './dto/create-cuisine.dto';
 import { UpdateCuisineDto } from './dto/update-cuisine.dto';
@@ -16,9 +16,9 @@ export class CuisineController {
   }
 
   @Get()
-  findAll() {
-    return this.cuisineService.findAll();
-  }
+    findAll(@Query('name') name?: string) {
+      return this.cuisineService.findAll(name);
+    }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {

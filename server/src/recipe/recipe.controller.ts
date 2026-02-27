@@ -10,7 +10,7 @@ export class RecipeController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createRecipeDto: any, @Request() req) {
+  create(@Body() createRecipeDto: CreateRecipeDto, @Request() req) {
     // req.user is populated by the Guard from the JWT
     const userId = req.user.userId; 
     console.log('User ID from Token:', userId);

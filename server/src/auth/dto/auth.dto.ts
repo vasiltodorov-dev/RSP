@@ -1,7 +1,6 @@
-// src/user/dto/create-user.dto.ts
 import { IsEmail, IsNotEmpty, MinLength, IsString } from 'class-validator';
 
-export class CreateUserDto {
+export class AuthDto {
   @IsEmail({}, { message: 'Please enter a valid email address' })
   @IsNotEmpty()
   email: string;

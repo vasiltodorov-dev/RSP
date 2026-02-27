@@ -108,7 +108,7 @@ export class RecipeService {
     });
   }
 
-  async update(id: number, updateRecipeDto: any) {   
+  async update(id: number, updateRecipeDto: UpdateRecipeDto) {   
   const recipeExists = await this.recipeRepository.findOneBy({ id });
   if (!recipeExists) {
     throw new NotFoundException(`Recipe with ID ${id} not found`);

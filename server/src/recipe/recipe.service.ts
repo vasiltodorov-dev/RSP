@@ -11,13 +11,18 @@ import { ILike } from 'typeorm';
 export class RecipeService {
   constructor(
     @InjectRepository(Recipe)
-    private recipeRepository: Repository<Recipe>,
-    
+    private recipeRepository: Repository<Recipe>,  
     @InjectRepository(RecipeIngredient)
     private recipeIngredientRepository: Repository<RecipeIngredient>,
-
     private dataSource: DataSource, // Used for transactions
   ) {}
+  async updateImage(recipeId: number, imagePath: string) {
+    const recipe = await this.recipeRepository.findOneBy({ id: recipeId });
+    if (!recipe) throw new NotFoundException('Recipe not found');
+    
+    recipe.imageURL = imagePath;
+    return this.recipeRepository.save(recipe);
+  }
   async create(createRecipeDto: CreateRecipeDto, userId: number) {
     const { ingredientData, cuisineId, dietaryPreferenceIds, ...recipeDetails } = createRecipeDto;
 

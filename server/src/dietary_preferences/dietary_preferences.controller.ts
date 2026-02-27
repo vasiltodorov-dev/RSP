@@ -1,13 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, UseGuards } from '@nestjs/common';
 import { DietaryPreferencesService } from './dietary_preferences.service';
 import { CreateDietaryPreferenceDto } from './dto/create-dietary_preference.dto';
 import { UpdateDietaryPreferenceDto } from './dto/update-dietary_preference.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // Import your guard
+import {AdminGuard} from '../auth/roles.guard';
 
 @Controller('dietary-preferences')
 export class DietaryPreferencesController {
   constructor(private readonly dietaryPreferencesService: DietaryPreferencesService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, AdminGuard)
   create(@Body() createDietaryPreferenceDto: CreateDietaryPreferenceDto) {
     return this.dietaryPreferencesService.create(createDietaryPreferenceDto);
   }
@@ -30,11 +33,13 @@ export class DietaryPreferencesController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, AdminGuard)
   update(@Param('id') id: string, @Body() updateDietaryPreferenceDto: UpdateDietaryPreferenceDto) {
     return this.dietaryPreferencesService.update(+id, updateDietaryPreferenceDto);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, AdminGuard)
   remove(@Param('id') id: string) {
     return this.dietaryPreferencesService.remove(+id);
   }

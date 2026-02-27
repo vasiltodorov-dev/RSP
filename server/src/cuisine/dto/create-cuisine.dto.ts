@@ -1,1 +1,3 @@
-export class CreateCuisineDto {}
+export class CreateCuisineDto {
+    name: string;
+}

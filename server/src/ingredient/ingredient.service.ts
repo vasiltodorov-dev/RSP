@@ -72,7 +72,7 @@ export class IngredientService {
     if (result.affected === 0) {
       throw new NotFoundException(`Ingredient #${id} not found`);
     }
-
+    
     return { message: 'Ingredient deleted successfully' };
 
   } catch (error) {

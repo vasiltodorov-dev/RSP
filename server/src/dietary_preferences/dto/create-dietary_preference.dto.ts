@@ -1,1 +1,3 @@
-export class CreateDietaryPreferenceDto {}
+export class CreateDietaryPreferenceDto {
+    name: string;
+}

@@ -1,5 +1,6 @@
+// src/app/shared/components/navbar/navbar.component.ts
 import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -7,18 +8,14 @@ import { AuthService } from '../../../core/services/auth.service';
   standalone: true,
   imports: [RouterLink],
   templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.css'
+  styleUrl: './navbar.component.scss'
 })
 export class NavbarComponent {
-  // Inject the service
-  authService = inject(AuthService);
+  authService = inject(AuthService); // Access to currentUser() and isLoggedIn()
+  private router = inject(Router);
 
-  // A temporary function to test if the Navbar reacts
-  testMockLogin() {
-    this.authService.currentUser.set({
-      userId: 1,
-      email: 'test@example.com',
-      role: 'admin'
-    });
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

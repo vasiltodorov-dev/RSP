@@ -79,33 +79,41 @@ export class RecipeService {
       await queryRunner.release();
     }
   }
+async findAll(query: { title?: string, cuisineId?: number; ingredientIds?: number[]; dietaryId?: number }) {
+    const { title, cuisineId, ingredientIds, dietaryId } = query;
 
-  async findAll(query: { title?: string,cuisineId?: number; ingredientId?: number; dietaryId?: number }) {
-    const { title,cuisineId, ingredientId, dietaryId } = query;
+    const qb = this.recipeRepository.createQueryBuilder('recipe')
+      .leftJoinAndSelect('recipe.author', 'author')
+      .leftJoinAndSelect('recipe.cuisine', 'cuisine')
+      .leftJoinAndSelect('recipe.dietaryPreferences', 'dietaryPreferences')
+      .leftJoinAndSelect('recipe.recipeIngredients', 'ri')
+      .leftJoinAndSelect('ri.ingredient', 'ingredient');
 
-    return await this.recipeRepository.find({
-      where: {  
-        title: title ? ILike(`%${title}%`) : undefined,    
-        cuisine: cuisineId ? { id: cuisineId } : {},
-        dietaryPreferences: dietaryId ? { id: dietaryId } : {},
-        recipeIngredients: ingredientId ? { ingredientId: ingredientId } : {},
-      },
-      relations: {
-        author: true,
-        cuisine: true,
-        dietaryPreferences: true,
-        recipeIngredients: {
-          ingredient: true,
-        },
-      },
-      select: {
-          author: {
-            id: true,
-            email: true,
-          },
-        },
-      order: { title: 'ASC' },
-    });
+    // Filter by Title
+    if (title) qb.andWhere('recipe.title ILIKE :title', { title: `%${title}%` });
+
+    // Filter by Cuisine
+    if (cuisineId) qb.andWhere('recipe.cuisineId = :cuisineId', { cuisineId });
+
+    // Filter by Dietary
+    if (dietaryId) qb.andWhere('dietaryPreferences.id = :dietaryId', { dietaryId });
+
+    // THE "AND" LOGIC: This ensures the recipe has ALL requested ingredients
+    if (ingredientIds && ingredientIds.length > 0) {
+      qb.andWhere((sub) => {
+        const query = sub.subQuery()
+          .select('res.id')
+          .from(Recipe, 'res')
+          .innerJoin('res.recipeIngredients', 'ri')
+          .where('ri.ingredientId IN (:...ids)', { ids: ingredientIds })
+          .groupBy('res.id')
+          .having('COUNT(DISTINCT ri.ingredientId) = :count', { count: ingredientIds.length })
+          .getQuery();
+        return 'recipe.id IN ' + query;
+      });
+    }
+
+    return await qb.orderBy('recipe.title', 'ASC').getMany();
   }
 
   async findOne(id: number) {

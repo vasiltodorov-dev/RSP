@@ -42,14 +42,32 @@ export class RecipeController {
   }
 
   @Get()
-  findAll(
-    @Query('title') title?: string,
-    @Query('cuisineId') cuisineId?: number,
-    @Query('ingredientId') ingredientId?: number,
-    @Query('dietaryId') dietaryId?: number,
-  ) {
-    return this.recipeService.findAll({ title,cuisineId, ingredientId, dietaryId });
+findAll(
+  @Query('title') title?: string,
+  @Query('cuisineId') cuisineId?: number,
+  @Query('dietaryId') dietaryId?: number,
+  // 1. Rename to plural and allow string or array
+  @Query('ingredientIds') ingredientIds?: string | string[], 
+) {
+  // 2. Transform the input into a clean number array
+  let ids: number[] | undefined = undefined;
+
+  if (ingredientIds) {
+    // If it's a single string, wrap it in an array; if it's already an array, use it
+    const rawIds = Array.isArray(ingredientIds) ? ingredientIds : [ingredientIds];
+    
+    // Convert all strings to numbers and filter out any junk
+    ids = rawIds.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
   }
+
+  // 3. Pass the clean object to the service
+  return this.recipeService.findAll({ 
+    title, 
+    cuisineId: cuisineId ? Number(cuisineId) : undefined, 
+    dietaryId: dietaryId ? Number(dietaryId) : undefined,
+    ingredientIds: ids // This is now your array for the "AND" logic
+  });
+}
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
